@@ -23,11 +23,16 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import org.example.project.MyDataBase
 import org.example.project.commonHeaderStyle
 import org.example.project.components.CommonOutlinedTextField
 
 @Composable
-fun RegistrationScreen(modifier: Modifier = Modifier, onRegistrationSuccess: () -> Unit) {
+fun RegistrationScreen(
+    dataBase: MyDataBase,
+    modifier: Modifier = Modifier,
+    onRegistrationSuccess: () -> Unit
+) {
 
     val viewModel = remember { RegistrationViewModel() }
 
@@ -51,7 +56,10 @@ fun RegistrationScreen(modifier: Modifier = Modifier, onRegistrationSuccess: () 
         passwordError = passwordError,
         onRegisterClick = {
             if (viewModel.validateForm()) {
-                onRegistrationSuccess()
+                val registrationSuccess = viewModel.registerUser(database = dataBase)
+                if (registrationSuccess) {
+                    onRegistrationSuccess()
+                }
             }
         }
     )

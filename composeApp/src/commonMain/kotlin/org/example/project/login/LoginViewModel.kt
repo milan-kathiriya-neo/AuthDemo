@@ -3,6 +3,7 @@ package org.example.project.login
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import org.example.project.MyDataBase
 import org.example.project.util.emailRegex
 
 class LoginViewModel : ViewModel() {
@@ -49,5 +50,19 @@ class LoginViewModel : ViewModel() {
         validatePassword()
 
         return emailError.value == null && passwordError.value == null
+    }
+
+    fun loginUser(
+        database: MyDataBase,
+    ):String? {
+        return try {
+            val user = database.userQueries.getUserByUsername(email.value).executeAsOneOrNull() ?: return "User not found"
+            if (user.password != password.value) return "Invalid password"
+            println("Login success:")
+            null
+        } catch (e: Exception) {
+            println("login failed: ${e.message}")
+            e.message
+        }
     }
 }

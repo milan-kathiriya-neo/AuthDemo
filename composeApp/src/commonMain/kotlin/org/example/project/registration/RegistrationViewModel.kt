@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.example.project.util.emailRegex
+import org.example.project.MyDataBase
 
 class RegistrationViewModel : ViewModel() {
     private val _email = MutableStateFlow("")
@@ -68,5 +69,18 @@ class RegistrationViewModel : ViewModel() {
         validatePassword()
 
         return emailError.value == null && userNameError.value == null && passwordError.value == null
+    }
+
+    fun registerUser(
+        database: MyDataBase,
+    ): Boolean {
+        return try {
+            database.userQueries.insertUser(email.value, userName.value, password.value)
+            println("Registration success:")
+            true
+        } catch (e: Exception) {
+            println("Registration failed: ${e.message}")
+            false
+        }
     }
 }

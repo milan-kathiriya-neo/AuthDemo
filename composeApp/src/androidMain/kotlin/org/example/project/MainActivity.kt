@@ -12,8 +12,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        val db = createDatabase(DatabaseDriverFactory(this))
+
         setContent {
-            App()
+            App(db)
         }
     }
 }

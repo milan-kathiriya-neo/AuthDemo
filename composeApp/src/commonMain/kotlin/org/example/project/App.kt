@@ -8,8 +8,8 @@ import org.example.project.login.LoginScreen
 
 @Composable
 @Preview
-fun App() {
+fun App(database: MyDataBase? = null) {
     MaterialTheme {
-        AppRoot()
+        database?.let { AppRoot(it) }
     }
 }

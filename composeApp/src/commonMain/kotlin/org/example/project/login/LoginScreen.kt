@@ -15,6 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,11 +31,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.example.project.MyDataBase
 import org.example.project.commonHeaderStyle
 import org.example.project.components.CommonOutlinedTextField
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier, onLoginSuccess: () -> Unit, onRegister: () -> Unit) {
+fun LoginScreen(
+    dataBase: MyDataBase,
+    modifier: Modifier = Modifier,
+    onLoginSuccess: () -> Unit,
+    onRegister: () -> Unit
+) {
 
     val viewModel = remember { LoginViewModel() }
 
@@ -42,36 +53,36 @@ fun LoginScreen(modifier: Modifier = Modifier, onLoginSuccess: () -> Unit, onReg
     val password by viewModel.password.collectAsState()
     val passwordError by viewModel.passwordError.collectAsState()
 
-
     LoginScreenContent(
         modifier = modifier,
+        dataBase = dataBase,
+        viewModel = viewModel,
         email = email,
-        onEmailValueChange = { viewModel.onEmailChange(it) },
         emailError = emailError,
         password = password,
-        onPasswordValueChange = { viewModel.onPasswordChange(it) },
         passwordError = passwordError,
-        onLoginClick = {
-            if (viewModel.validateForm()) {
-                onLoginSuccess()
-            }
-        }, onRegisterClick = onRegister
+        onLoginSuccess = onLoginSuccess,
+        onRegisterClick = onRegister
     )
 }
 
 @Composable
 fun LoginScreenContent(
     modifier: Modifier = Modifier,
+    dataBase: MyDataBase,
+    viewModel: LoginViewModel,
     email: String,
-    onEmailValueChange: (String) -> Unit,
     emailError: String?,
     password: String,
-    onPasswordValueChange: (String) -> Unit,
     passwordError: String?,
-    onLoginClick: () -> Unit,
+    onLoginSuccess: () -> Unit,
     onRegisterClick: () -> Unit
 ) {
-    Scaffold { innerPadding ->
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackBarHostState) }
+    ) { innerPadding ->
         Column(
             modifier = modifier.padding(innerPadding)
                 .fillMaxSize()
@@ -91,7 +102,7 @@ fun LoginScreenContent(
                 CommonOutlinedTextField(
                     label = "Email",
                     value = email,
-                    onValueChange = { onEmailValueChange(it) },
+                    onValueChange = { viewModel.onEmailChange(it) },
                     placeholder = "Email",
                     isError = emailError != null,
                     errorText = emailError,
@@ -101,7 +112,7 @@ fun LoginScreenContent(
                 CommonOutlinedTextField(
                     label = "Password",
                     value = password,
-                    onValueChange = { onPasswordValueChange(it) },
+                    onValueChange = { viewModel.onPasswordChange(it) },
                     placeholder = "Password",
                     isError = passwordError != null,
                     errorText = passwordError,
@@ -111,7 +122,18 @@ fun LoginScreenContent(
                 )
                 Spacer(Modifier.height(35.dp))
                 Button(
-                    onClick = onLoginClick,
+                    onClick = {
+                        if (viewModel.validateForm()) {
+                            val loginMsg = viewModel.loginUser(dataBase)
+                            if (loginMsg == null) {
+                                onLoginSuccess()
+                            } else {
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    snackBarHostState.showSnackbar(loginMsg)
+                                }
+                            }
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(55.dp),

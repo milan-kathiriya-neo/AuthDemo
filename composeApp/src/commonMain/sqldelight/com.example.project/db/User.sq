@@ -1,0 +1,15 @@
+CREATE TABLE User (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL,
+    userName TEXT NOT NULL,
+    password TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM User;
+
+insertUser:
+INSERT INTO User(email, userName, password) VALUES (?, ?, ?);
+
+getUserByUsername:
+SELECT * FROM User WHERE email = ?;

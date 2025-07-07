@@ -72,18 +72,18 @@ kotlin {
     sqldelight {
         databases {
             create("MyDataBase") {
-                packageName = "org.example.project"
+                packageName = "com.example.authdemo"
             }
         }
     }
 }
 
 android {
-    namespace = "org.example.project"
+    namespace = "com.example.authdemo"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "org.example.project"
+        applicationId = "com.example.authdemo"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -111,11 +111,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "org.example.project.MainKt"
+        mainClass = "com.example.authdemo.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.example.project"
+            packageName = "com.example.authdemo"
             packageVersion = "1.0.0"
         }
     }

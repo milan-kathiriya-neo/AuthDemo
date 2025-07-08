@@ -1,6 +1,6 @@
 CREATE TABLE User (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
     userName TEXT NOT NULL,
     password TEXT NOT NULL
 );
@@ -13,3 +13,6 @@ INSERT INTO User(email, userName, password) VALUES (?, ?, ?);
 
 getUserByUsername:
 SELECT * FROM User WHERE email = ?;
+
+isEmailAlreadyExist:
+SELECT EXISTS(SELECT 1 FROM User WHERE email = :email);

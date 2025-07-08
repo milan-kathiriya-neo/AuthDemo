@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import com.example.authdemo.MyDataBase
 import com.example.authdemo.util.emailRegex
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(private val dataBase: MyDataBase) : ViewModel() {
     private val _email = MutableStateFlow("")
     val email: StateFlow<String> = _email
 
@@ -52,17 +52,18 @@ class LoginViewModel : ViewModel() {
         return emailError.value == null && passwordError.value == null
     }
 
-    fun loginUser(
-        database: MyDataBase,
-    ):String? {
-        return try {
-            val user = database.userQueries.getUserByUsername(email.value).executeAsOneOrNull() ?: return "User not found"
-            if (user.password != password.value) return "Invalid password"
+    fun loginUser(): Pair<Boolean, String?> {
+        try {
+            val user = dataBase.userQueries.getUserByUsername(email.value).executeAsOneOrNull()
+                ?: return Pair(false, "User not found")
+            if (user.password != password.value) {
+                return Pair(false, "Invalid password")
+            }
             println("Login success:")
-            null
+            return Pair(true, null)
         } catch (e: Exception) {
             println("login failed: ${e.message}")
-            e.message
+            return Pair(false, e.message)
         }
     }
 }

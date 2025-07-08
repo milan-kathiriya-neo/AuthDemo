@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import com.example.authdemo.util.emailRegex
 import com.example.authdemo.MyDataBase
 
-class RegistrationViewModel : ViewModel() {
+class RegistrationViewModel(private val dataBase: MyDataBase) : ViewModel() {
     private val _email = MutableStateFlow("")
     val email: StateFlow<String> = _email
 
@@ -71,16 +71,18 @@ class RegistrationViewModel : ViewModel() {
         return emailError.value == null && userNameError.value == null && passwordError.value == null
     }
 
-    fun registerUser(
-        database: MyDataBase,
-    ): Boolean {
-        return try {
-            database.userQueries.insertUser(email.value, userName.value, password.value)
+    fun registerUser(): Pair<Boolean, String?> {
+        try {
+            val isEmailAlreadyExist = dataBase.userQueries.isEmailAlreadyExist(email.value).executeAsOneOrNull()
+            if (isEmailAlreadyExist == true){
+                return Pair(false, "Email already exists")
+            }
+            dataBase.userQueries.insertUser(email.value, userName.value, password.value)
             println("Registration success:")
-            true
+            return Pair(true, null)
         } catch (e: Exception) {
             println("Registration failed: ${e.message}")
-            false
+            return Pair(false, e.message)
         }
     }
 }

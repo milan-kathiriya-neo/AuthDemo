@@ -31,45 +31,45 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import com.example.authdemo.commonHeaderStyle
+import com.example.authdemo.components.CommonOutlinedTextField
+import com.example.authdemo.home.HomeScreen
+import com.example.authdemo.registration.RegistrationScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.example.authdemo.MyDataBase
-import com.example.authdemo.commonHeaderStyle
-import com.example.authdemo.components.CommonOutlinedTextField
+import org.koin.compose.viewmodel.koinViewModel
 
-@Composable
-fun LoginScreen(
-    dataBase: MyDataBase,
-    modifier: Modifier = Modifier,
-    onLoginSuccess: () -> Unit,
-    onRegister: () -> Unit
-) {
+class LoginScreen() : Screen {
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.current
+        val viewModel: LoginViewModel = koinViewModel()
 
-    val viewModel = remember { LoginViewModel() }
+        val email by viewModel.email.collectAsState()
+        val emailError by viewModel.emailError.collectAsState()
+        val password by viewModel.password.collectAsState()
+        val passwordError by viewModel.passwordError.collectAsState()
 
-    val email by viewModel.email.collectAsState()
-    val emailError by viewModel.emailError.collectAsState()
-    val password by viewModel.password.collectAsState()
-    val passwordError by viewModel.passwordError.collectAsState()
-
-    LoginScreenContent(
-        modifier = modifier,
-        dataBase = dataBase,
-        viewModel = viewModel,
-        email = email,
-        emailError = emailError,
-        password = password,
-        passwordError = passwordError,
-        onLoginSuccess = onLoginSuccess,
-        onRegisterClick = onRegister
-    )
+        LoginScreenContent(
+            viewModel = viewModel,
+            email = email,
+            emailError = emailError,
+            password = password,
+            passwordError = passwordError,
+            onLoginSuccess = {
+                navigator?.replaceAll(HomeScreen())
+            },
+            onRegisterClick = { navigator?.push(RegistrationScreen()) }
+        )
+    }
 }
 
 @Composable
 fun LoginScreenContent(
     modifier: Modifier = Modifier,
-    dataBase: MyDataBase,
     viewModel: LoginViewModel,
     email: String,
     emailError: String?,
@@ -124,12 +124,12 @@ fun LoginScreenContent(
                 Button(
                     onClick = {
                         if (viewModel.validateForm()) {
-                            val loginMsg = viewModel.loginUser(dataBase)
-                            if (loginMsg == null) {
+                            val loginResponse = viewModel.loginUser()
+                            if (loginResponse.first) {
                                 onLoginSuccess()
                             } else {
                                 CoroutineScope(Dispatchers.Main).launch {
-                                    snackBarHostState.showSnackbar(loginMsg)
+                                    snackBarHostState.showSnackbar(loginResponse.second?:"")
                                 }
                             }
                         }

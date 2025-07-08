@@ -14,11 +14,14 @@ class HomeViewModel(private val dataBase: MyDataBase) : ViewModel() {
         getAllUser()
     }
 
-    private fun getAllUser(): List<User> {
-        return try {
-            dataBase.userQueries.selectAll().executeAsList()
+    private fun getAllUser(){
+        try {
+            val users :List<User> = dataBase.userQueries.selectAll().executeAsList()
+            println("getAllUser: success -> $users")
+            _usersList.value = users
         } catch (e: Exception) {
-            emptyList()
+            println("getAllUser: error -> ${e.message}")
+            _usersList.value = emptyList()
         }
     }
 }

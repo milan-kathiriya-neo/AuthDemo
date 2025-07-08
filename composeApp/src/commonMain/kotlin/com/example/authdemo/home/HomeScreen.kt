@@ -12,26 +12,28 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.authdemo.MyDataBase
-import comexampleauthdemo.db.User
+import cafe.adriel.voyager.core.screen.Screen
+import org.koin.compose.viewmodel.koinViewModel
 
-@Composable
-fun HomeScreen(dataBase: MyDataBase, modifier: Modifier = Modifier) {
-    val viewModel = remember { HomeViewModel(dataBase = dataBase) }
-    val users by viewModel.usersList.collectAsState()
-    HomeScreenContent(users, modifier = modifier)
+class HomeScreen(private val modifier: Modifier = Modifier):Screen{
+    @Composable
+    override fun Content() {
+        HomeScreenContent(modifier = modifier)
+    }
 }
 
 @Composable
-fun HomeScreenContent(users: List<User>, modifier: Modifier = Modifier) {
+fun HomeScreenContent(modifier: Modifier = Modifier) {
+    val viewModel :HomeViewModel = koinViewModel()
+    val users by viewModel.usersList.collectAsState()
+
     Scaffold { innerPadding ->
         Box(
             modifier = modifier.padding(innerPadding).fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             if (users.isEmpty()) {
                 Text("No User found!")

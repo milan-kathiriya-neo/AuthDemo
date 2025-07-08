@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,63 +25,59 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.authdemo.MyDataBase
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import com.example.authdemo.commonHeaderStyle
 import com.example.authdemo.components.CommonOutlinedTextField
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.koin.compose.viewmodel.koinViewModel
 
-@Composable
-fun RegistrationScreen(
-    dataBase: MyDataBase,
-    modifier: Modifier = Modifier,
-    onRegistrationSuccess: () -> Unit
-) {
+class RegistrationScreen : Screen {
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.current
+        val viewModel: RegistrationViewModel = koinViewModel()
 
-    val viewModel = remember { RegistrationViewModel() }
+        val email by viewModel.email.collectAsState()
+        val emailError by viewModel.emailError.collectAsState()
+        val userName by viewModel.userName.collectAsState()
+        val userNameError by viewModel.userNameError.collectAsState()
+        val password by viewModel.password.collectAsState()
+        val passwordError by viewModel.passwordError.collectAsState()
 
-    val email by viewModel.email.collectAsState()
-    val emailError by viewModel.emailError.collectAsState()
-    val userName by viewModel.userName.collectAsState()
-    val userNameError by viewModel.userNameError.collectAsState()
-    val password by viewModel.password.collectAsState()
-    val passwordError by viewModel.passwordError.collectAsState()
-
-    RegistrationScreenContent(
-        modifier = modifier,
-        email = email,
-        onEmailValueChange = { viewModel.onEmailChange(it) },
-        emailError = emailError,
-        userName = userName,
-        onUserNameValueChange = { viewModel.onUserNameChange(it) },
-        userNameError = userNameError,
-        password = password,
-        onPasswordValueChange = { viewModel.onPasswordChange(it) },
-        passwordError = passwordError,
-        onRegisterClick = {
-            if (viewModel.validateForm()) {
-                val registrationSuccess = viewModel.registerUser(database = dataBase)
-                if (registrationSuccess) {
-                    onRegistrationSuccess()
-                }
+        RegistrationScreenContent(
+            viewModel = viewModel,
+            email = email,
+            emailError = emailError,
+            userName = userName,
+            userNameError = userNameError,
+            password = password,
+            passwordError = passwordError,
+            onRegisterSuccess = {
+                navigator?.pop()
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable
 fun RegistrationScreenContent(
     modifier: Modifier = Modifier,
+    viewModel: RegistrationViewModel,
     email: String,
-    onEmailValueChange: (String) -> Unit,
     emailError: String?,
     userName: String,
-    onUserNameValueChange: (String) -> Unit,
     userNameError: String?,
     password: String,
-    onPasswordValueChange: (String) -> Unit,
     passwordError: String?,
-    onRegisterClick: () -> Unit
+    onRegisterSuccess: () -> Unit
 ) {
-    Scaffold { innerPadding ->
+    val snackBarHostState = remember { SnackbarHostState() }
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackBarHostState) }
+    ) { innerPadding ->
         Column(
             modifier = modifier.padding(innerPadding)
                 .fillMaxSize()
@@ -99,7 +97,7 @@ fun RegistrationScreenContent(
                 CommonOutlinedTextField(
                     label = "Email",
                     value = email,
-                    onValueChange = { onEmailValueChange(it) },
+                    onValueChange = { viewModel.onEmailChange(it) },
                     placeholder = "Email",
                     isError = emailError != null,
                     errorText = emailError,
@@ -109,7 +107,7 @@ fun RegistrationScreenContent(
                 CommonOutlinedTextField(
                     label = "UserName",
                     value = userName,
-                    onValueChange = { onUserNameValueChange(it) },
+                    onValueChange = { viewModel.onUserNameChange(it) },
                     placeholder = "UserName",
                     isError = userNameError != null,
                     errorText = userNameError,
@@ -118,7 +116,7 @@ fun RegistrationScreenContent(
                 CommonOutlinedTextField(
                     label = "Password",
                     value = password,
-                    onValueChange = { onPasswordValueChange(it) },
+                    onValueChange = { viewModel.onPasswordChange(it) },
                     placeholder = "Password",
                     isError = passwordError != null,
                     errorText = passwordError,
@@ -128,7 +126,20 @@ fun RegistrationScreenContent(
                 )
                 Spacer(Modifier.height(35.dp))
                 Button(
-                    onClick = onRegisterClick,
+                    onClick = {
+                        if (viewModel.validateForm()) {
+                            val registrationResponse = viewModel.registerUser()
+                            if (registrationResponse.first) {
+                                onRegisterSuccess()
+                            } else {
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    snackBarHostState.showSnackbar(
+                                        registrationResponse.second ?: ""
+                                    )
+                                }
+                            }
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(55.dp),

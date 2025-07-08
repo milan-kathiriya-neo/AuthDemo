@@ -10,8 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,31 +21,23 @@ import comexampleauthdemo.db.User
 
 @Composable
 fun HomeScreen(dataBase: MyDataBase, modifier: Modifier = Modifier) {
-    HomeScreenContent(dataBase = dataBase, modifier = modifier)
+    val viewModel = remember { HomeViewModel(dataBase = dataBase) }
+    val users by viewModel.usersList.collectAsState()
+    HomeScreenContent(users, modifier = modifier)
 }
 
 @Composable
-fun HomeScreenContent(dataBase: MyDataBase, modifier: Modifier = Modifier) {
-
-    val userList = remember { mutableStateListOf<User>() }
-
-    LaunchedEffect(Unit) {
-        val users = dataBase.userQueries.selectAll().executeAsList()
-        userList.clear()
-        userList.addAll(users)
-    }
-
+fun HomeScreenContent(users: List<User>, modifier: Modifier = Modifier) {
     Scaffold { innerPadding ->
         Box(
             modifier = modifier.padding(innerPadding).fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-
-            if (userList.isEmpty()) {
-                Text("Welcome to Home Screen!")
+            if (users.isEmpty()) {
+                Text("No User found!")
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
-                    items(userList) { user ->
+                    items(users) { user ->
                         Text("ID: ${user.id},")
                         Text("Name: ${user.userName}")
                         Text("Email: ${user.email}")

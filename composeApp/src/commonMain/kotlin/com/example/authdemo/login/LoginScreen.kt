@@ -39,6 +39,7 @@ import com.example.authdemo.home.HomeScreen
 import com.example.authdemo.registration.RegistrationScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -124,12 +125,14 @@ fun LoginScreenContent(
                 Button(
                     onClick = {
                         if (viewModel.validateForm()) {
-                            val loginResponse = viewModel.loginUser()
-                            if (loginResponse.first) {
-                                onLoginSuccess()
-                            } else {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val loginResponse = viewModel.loginUser()
                                 CoroutineScope(Dispatchers.Main).launch {
-                                    snackBarHostState.showSnackbar(loginResponse.second?:"")
+                                    if (loginResponse.first) {
+                                        onLoginSuccess()
+                                    } else {
+                                        snackBarHostState.showSnackbar(loginResponse.second ?: "")
+                                    }
                                 }
                             }
                         }

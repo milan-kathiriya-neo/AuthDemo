@@ -1,19 +1,25 @@
 package com.example.authdemo.login
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.example.authdemo.MyDataBase
+import com.example.authdemo.PreferencesKeys
 import com.example.authdemo.util.emailRegex
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
-class LoginViewModel(private val dataBase: MyDataBase) : ViewModel() {
-    private val _email = MutableStateFlow("")
+class LoginViewModel(private val dataBase: MyDataBase, private val prefs:DataStore<Preferences>) : ViewModel() {
+    private val _email = MutableStateFlow("xyz@gmail.com")
     val email: StateFlow<String> = _email
 
     private val _emailError = MutableStateFlow<String?>(null)
     val emailError: StateFlow<String?> = _emailError
 
-    private val _password = MutableStateFlow("")
+    private val _password = MutableStateFlow("xyz@123")
     val password: StateFlow<String> = _password
 
     private val _passwordError = MutableStateFlow<String?>(null)
@@ -52,7 +58,7 @@ class LoginViewModel(private val dataBase: MyDataBase) : ViewModel() {
         return emailError.value == null && passwordError.value == null
     }
 
-    fun loginUser(): Pair<Boolean, String?> {
+    suspend fun loginUser(): Pair<Boolean, String?> {
         try {
             val user = dataBase.userQueries.getUserByUsername(email.value).executeAsOneOrNull()
                 ?: return Pair(false, "User not found")
@@ -60,6 +66,11 @@ class LoginViewModel(private val dataBase: MyDataBase) : ViewModel() {
                 return Pair(false, "Invalid password")
             }
             println("Login success:")
+            prefs.edit {
+                it[PreferencesKeys.USER_DATA_PREF_KEY] = user.toString()
+             }
+            val stored = prefs.data.map { it[PreferencesKeys.USER_DATA_PREF_KEY] }.first()
+            println("DataStore: Stored value: $stored")
             return Pair(true, null)
         } catch (e: Exception) {
             println("login failed: ${e.message}")

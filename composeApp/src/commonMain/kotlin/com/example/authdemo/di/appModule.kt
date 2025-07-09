@@ -11,7 +11,7 @@ import org.koin.dsl.module
 val appModule: Module = module {
     single { createDatabase(get()) } // SQLDelight DB instance
 
-    viewModel { LoginViewModel(get()) }
+    viewModel { LoginViewModel(get(), get()) }
     viewModel { RegistrationViewModel(get()) }
-    viewModel { HomeViewModel(get()) }
+    viewModel { HomeViewModel(get(), get()) }
 }

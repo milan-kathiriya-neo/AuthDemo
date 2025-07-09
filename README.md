@@ -5,14 +5,14 @@ A simple Kotlin Multiplatform (KMP) authentication demo showcasing user login an
 
 ## ✨ Features
 
-- 🔑 **User Authentication** with login flow
-- 📦 **Kotlin Multiplatform Project (KMP)** setup
-- 🧠 **State Management** using `remember`, `mutableStateOf`, and flows
-- 🗃️ **SQLDelight** integration for persistent data
-- 🛠 **DataStore Preferences** for login state
-- 🎨 **Jetpack Compose UI** for shared and platform-specific UI
-- 🎨 **Voyager** for navigation
-- 🧪 **Platform-specific implementations** using `expect`/`actual` declarations
+- ✅ **User Authentication** with login flow
+- ✅ **Kotlin Multiplatform Project (KMP)** setup
+- ✅ **State Management** using `remember`, `mutableStateOf`, and flows
+- ✅ **SQLDelight** integration for persistent data
+- ✅ **DataStore Preferences** for login state
+- ✅ **Jetpack Compose UI** for shared and platform-specific UI
+- ✅ **Voyager** for navigation
+- ✅ **Platform-specific implementations** using `expect`/`actual` declarations
 
 ## 🔧 Tech Stack
 
@@ -20,8 +20,6 @@ A simple Kotlin Multiplatform (KMP) authentication demo showcasing user login an
 - [SQLDelight](https://cashapp.github.io/sqldelight/) for database
 - [Koin](https://insert-koin.io/) for dependency injection
 - [DataStore Preferences](https://developer.android.com/topic/libraries/architecture/datastore) for session persistence
-
-## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -37,6 +35,10 @@ A simple Kotlin Multiplatform (KMP) authentication demo showcasing user login an
 ---
 
 ## 📸 Screenshots
+
+![Screenshot__login](https://github.com/milan-kathiriya-neo/AuthDemo/blob/dev/screenshots/login_screen.png).
+
+![Screenshot__registration](https://github.com/milan-kathiriya-neo/AuthDemo/blob/dev/screenshots/registration_screen.png).
 
 ----
 
